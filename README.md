@@ -1,4 +1,4 @@
-# python-reverse-shell
+# Python Reverse Meterpreter Shell
 
 Just change IPs to your attacker machine.
 
