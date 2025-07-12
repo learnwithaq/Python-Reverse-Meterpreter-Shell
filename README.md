@@ -24,7 +24,8 @@ download - to download files from victim machine<br>
 upload - to upload files to victim machine<br>
 desktop - Take screenshot<br>
 camera - capture victim picture<br>
-
+<br>
+<hr>
 <b>DISCLAIMER:</b>
 This script is intended for **educational purposes only** and to help cybersecurity professionals and students understand reverse shell behavior, file transfer over sockets, and system interaction using Python.<br>
 
